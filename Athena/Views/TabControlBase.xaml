@@ -4,7 +4,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:converters="clr-namespace:Athena.Converters"
+             xmlns:services="clr-namespace:Athena.Services"
              mc:Ignorable="d" d:DesignHeight="400" d:DesignWidth="600">
+
+    <UserControl.Resources>
+        <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </UserControl.Resources>
     <StackPanel Margin="8" HorizontalAlignment="Center" MaxWidth="400">
         <TextBlock Text="Base Game Equipment Randomizer"
                FontSize="20"
@@ -31,5 +38,45 @@
                 Height="40" Width="120"
                 Margin="0,8,0,0"
                 Command="{Binding LaunchCommand}" />
+        <GroupBox Header="Base Mode"
+          Margin="0,5,0,0"
+          Padding="5"
+          BorderBrush="LightGray"
+          BorderThickness="1"
+          HorizontalAlignment="Center"
+          Width="250">
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <RadioButton Grid.Row="0"
+                     Grid.Column="0"
+                     Content="Original"
+                     Margin="3"
+                     FontSize="11"
+                     GroupName="BaseModeGroup"
+                     IsChecked="{Binding BaseMode,
+                                         Converter={StaticResource EnumToBooleanConverter},
+                                         ConverterParameter={x:Static services:BaseMode.Default}}" />
+
+                <RadioButton Grid.Row="0"
+                     Grid.Column="1"
+                     Content="Conquest"
+                     Margin="3"
+                     FontSize="11"
+                     GroupName="BaseDlcModeGroup"
+                     IsChecked="{Binding BaseMode,
+                                         Converter={StaticResource EnumToBooleanConverter},
+                                         ConverterParameter={x:Static services:BaseMode.Baseplus}}" />
+            </Grid>
+        </GroupBox>
     </StackPanel>
 </UserControl>

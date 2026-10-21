@@ -1,0 +1,34 @@
+ID,Name,Cost,Type,ParamType,EquipType,EventFlagID,SellQuantity
+1000,Crimson Amber Medallion,2500,Talisman,Accessory,2,35007030,1
+1010,Cerulean Amber Medallion,2500,Talisman,Accessory,2,1035417100,1
+1020,Viridian Amber Medallion,2500,Talisman,Accessory,2,15007350,1
+1030,Arsenal Charm,2500,Talisman,Accessory,2,400470,1
+1190,Prince of Death's Pustule,2500,Talisman,Accessory,2,11057100,1
+4010,Spelldrake Talisman,2500,Talisman,Accessory,2,1043630040,1
+4020,Flamedrake Talisman,2500,Talisman,Accessory,2,1043630000,1
+4030,Boltdrake Talisman,2500,Talisman,Accessory,2,1043630020,1
+4040,Haligdrake Talisman,2500,Talisman,Accessory,2,1043630010,1
+4050,Pearldrake Talisman,2500,Talisman,Accessory,2,1043630030,1
+5030,Taker's Cameo,2500,Talisman,Accessory,2,400640,1
+8030,Shattered Stone Talisman,2500, Talisman,Accessory,2, 1043630070, 1
+8200,Talisman of Lord's Bestowal, 2500, Talisman,Accessory,2, 1043630050, 1
+1200,Mottled Necklace,5000,Talisman,Accessory,2,31107050,1
+8050,Crusade Insignia,5000,Talisman,Accessory,2,120290,1
+8100,Dried Bouquet, 5000, Talisman, Accessory, 2, 1043630090, 1
+2011000, Viridian Hidden Tear, 5000, Consumable, Good, 3, 1043630170, 1
+2011020, Crimson-Sapping Cracked Tear, 5000, Consumable, Good, 3, 1043630150, 1
+2011030, Cerulean-Sapping Cracked Tear, 5000, Consumable, Good, 3, 1043630160, 1,
+2011070, Deflecting Hardtear, 5000, Consumable, Good, 3, 1043630190, 1,
+8120,Ailment Talisman,5000,Talisman,Accessory,2,520350,1
+1070,Prosthesis-Wearer Heirloom,5000,Talisman,Accessory,2,400320,1
+1060,Starscourge Heirloom,5000,Talisman,Accessory,2,1047387900,1
+1080,Stargazer Heirloom,5000,Talisman,Accessory,2,34117500,1
+1090,Two Fingers Heirloom,5000,Talisman,Accessory,2,1039417100,1
+8020,Outer God Heirloom,5000,Talisman,Accessory,2,2045417800,1
+5000,Crimson Seed Talisman,10000,Talisman,Accessory,2,30087010,1
+4000,Dragoncrest Shield Talisman,10000,Talisman,Accessory,2,30087030,1
+8140,Lacerating Crossed-Tree,10000,Talisman,Accessory,2,400590,1
+8220,Rellana's Cameo,10000,Talisman,Accessory,2,400480,1
+8110,Smithing Talisman, 10000, Talisman,Accessory,2, 1043630060, 1,
+8180,Enraged Divine Beast, 10000, Talisman, Accessory, 2, 1043630080, 1
+2011040, Oil-Soaked Tear, 10000, Consumable, Good, 3, 1043630180, 1,

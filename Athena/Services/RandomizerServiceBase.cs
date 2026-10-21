@@ -6,13 +6,21 @@ using EldenRingParamsEditor;
 using System.Diagnostics;
 using System.IO;
 using UniversalReplacementRandomizer;
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace Athena.Services;
+
+public enum BaseMode
+{
+    Default,
+    Baseplus
+}
 
 public class RandomizerServiceBase
 {
     private string SeedManagerPrefix;
     RandomizerServiceStartingClass randomizerServiceStartingClass = new();
+    ModeService modeService = new();
 
     public RandomizerServiceBase(string appVersion)
     {
@@ -20,13 +28,41 @@ public class RandomizerServiceBase
     }
 
     public void RandomizeBase(int? baseSeed,
+                              BaseMode mode,
                               Action<int?>? updateBaseSeedCallback,
-                              Action<int?>? updateRandomizedSeedCallback)
+                              Action<int?>? updateRandomizedSeedCallback,
+                              Action<BaseMode?>? updatedRandomizedModeBaseCallback)
     {
         using DebugTimer _ = new DebugTimer("RandomizeBase");
 
-        var editor = ParamsEditor.ReadFromRegulationPath(Constants.RegulationInBase);
-        var menuBndEditor = MenuBndEditorService.ReadFromMenuBndFilePath(Constants.MenuBndInBase);
+        MenuBndEditorService menuBndEditor;
+        ParamsEditor editor;
+
+        string seedManagerPrefix;
+
+
+        switch (mode)
+        {
+            case BaseMode.Baseplus:
+                {
+                    menuBndEditor = MenuBndEditorService.ReadFromMenuBndFilePath(Constants.MenuBndInBaseplus);
+                    editor = ParamsEditor.ReadFromRegulationPath(Constants.RegulationInBaseplus);
+                    editor.SetGraceEventFlagId(180001);
+                    editor.SetGraceEventFlagId(61423700);
+                    editor.SetGraceEventFlagId(61423601);
+                    seedManagerPrefix = SeedManagerPrefix + "_baseplus";
+                    // Initialize the Talisman Shop
+                    InitBaseplusShop(editor);
+                    break;
+                }
+            default:
+                {
+                    menuBndEditor = MenuBndEditorService.ReadFromMenuBndFilePath(Constants.MenuBndInBase);
+                    editor = ParamsEditor.ReadFromRegulationPath(Constants.RegulationInBase);
+                    seedManagerPrefix = SeedManagerPrefix;
+                    break;
+                }
+        }
 
         var urr = new OptimizedReplacementRandomizer(SeedManagerPrefix, baseSeed);
         if (baseSeed == null)
@@ -38,7 +74,7 @@ public class RandomizerServiceBase
         RandomizeStartingClassesBase(editor, menuBndEditor, urr);
 
         // Randomize weapons, spells, and incantations
-        RandomizeAllGroupsBase(editor, urr);
+        RandomizeAllGroupsBase(editor, urr, mode);
 
         // swap the solo tree sentinel's halberd with the tree sentinel duo's greatshield
         SwapTreeSentinelDrops(editor);
@@ -55,10 +91,13 @@ public class RandomizerServiceBase
         // Pidia sells magic scorpion charm
         GivePidiaMagicScorpionCharm(editor);
 
+        ModeCustomization(mode);
+
         editor.WriteToRegulationPath(Constants.RegulationOutBase);
         menuBndEditor.WriteToMenuBndFilePath(Constants.MenuBndOutBase);
 
         updateRandomizedSeedCallback?.Invoke(urr.GetBaseSeed());
+        updatedRandomizedModeBaseCallback?.Invoke(mode);
     }
 
     private void RandomizeStartingClassesBase(ParamsEditor editor, MenuBndEditorService menuBndEditor, OptimizedReplacementRandomizer urr)
@@ -118,7 +157,7 @@ public class RandomizerServiceBase
         }
     }
 
-    public void RandomizeAllGroupsBase(ParamsEditor editor, OptimizedReplacementRandomizer urr)
+    public void RandomizeAllGroupsBase(ParamsEditor editor, OptimizedReplacementRandomizer urr, BaseMode mode)
     {
         var weaponIdsToItemLotMap = editor.GetWeaponIdsToItemLotMap();
         var weaponIdsToItemLotEnemy = editor.GetWeaponIdsToItemLotEnemy();
@@ -128,10 +167,17 @@ public class RandomizerServiceBase
         var goodsIdsToItemLotEnemy = editor.GetGoodsIdsToItemLotEnemy();
         var goodsIdsToShopLineup = editor.GetGoodsIdsToShopLineup();
 
+        string randomizationgrouppath = Constants.RandomizationGroupsBase;
+        if (mode == BaseMode.Baseplus)
+        {
+            randomizationgrouppath = Constants.RandomizationGroupsBaseplus;
+        }
+
+
         // incantations, dragon communion incantations, sorceries
         ReplacementUtils.Randomize<GameItemModel>(editor,
                                                   urr,
-                                                  $"{Constants.RandomizationGroupsBase}/spells",
+                                                  $"{randomizationgrouppath}/spells",
                                                   goodsIdsToItemLotMap,
                                                   goodsIdsToItemLotEnemy,
                                                   goodsIdsToShopLineup);
@@ -139,13 +185,13 @@ public class RandomizerServiceBase
         // chance weapons (randomized within classes)
         ReplacementUtils.RandomizeItemLotEnemy<WeaponModel>(editor,
                                                             urr,
-                                                            $"{Constants.RandomizationGroupsBase}/chance_weapons",
+                                                            $"{randomizationgrouppath}/chance_weapons",
                                                             weaponIdsToItemLotEnemy);
 
         // guaranteed and map weapons (randomized within classes)
         ReplacementUtils.Randomize<GameItemModel>(editor,
                                                   urr,
-                                                  $"{Constants.RandomizationGroupsBase}/map_guaranteed_weapons",
+                                                  $"{randomizationgrouppath}/map_guaranteed_weapons",
                                                   weaponIdsToItemLotMap,
                                                   weaponIdsToItemLotEnemy,
                                                   weaponIdsToShopLineup);
@@ -153,25 +199,25 @@ public class RandomizerServiceBase
         // remembrance weapons
         ReplacementUtils.RandomizeAndReplaceShopLineupFile<WeaponModel>(editor,
                                                                        urr,
-                                                                       $"{Constants.RandomizationGroupsBase}/remembrances/weapons.csv",
+                                                                       $"{randomizationgrouppath}/remembrances/weapons.csv",
                                                                        weaponIdsToShopLineup);
 
         // remembrance sorceries
         ReplacementUtils.RandomizeAndReplaceShopLineupFile<WeaponModel>(editor,
                                                                        urr,
-                                                                       $"{Constants.RandomizationGroupsBase}/remembrances/sorceries.csv",
+                                                                       $"{randomizationgrouppath}/remembrances/sorceries.csv",
                                                                        goodsIdsToShopLineup);
 
         // remembrance incantations
         ReplacementUtils.RandomizeAndReplaceShopLineupFile<WeaponModel>(editor,
                                                                        urr,
-                                                                       $"{Constants.RandomizationGroupsBase}/remembrances/incantations.csv",
+                                                                       $"{randomizationgrouppath}/remembrances/incantations.csv",
                                                                        goodsIdsToShopLineup);
 
         // shop weapons
         ReplacementUtils.RandomizeAndReplaceShopLineupDir<WeaponModel>(editor,
                                                                        urr,
-                                                                       $"{Constants.RandomizationGroupsBase}/shop_weapons",
+                                                                       $"{randomizationgrouppath}/shop_weapons",
                                                                        weaponIdsToShopLineup);
     }
 
@@ -295,6 +341,43 @@ public class RandomizerServiceBase
         //editor.SetShopLineupEquipType(targetShopLineupPerfumeBottle, Constants.EquipTypeWeapon);
     }
 
+    private void InitBaseplusShop(ParamsEditor editor)
+    {
+        using DebugTimer _ = new DebugTimer("InitBaseplusShop");
+
+        List<ShopItemModel> shopItems = CsvReaderUtils.Read<ShopItemModel>($"{Constants.Misc}/base/shop_talismans.csv");
+
+        // Setup the Runes shop.
+        int currentShopLineupId = 9300000;
+        uint currentEventFlagID = 1056448000;
+        uint eventFlagStepSize = 10;
+        for (int i = 0; i < shopItems.Count; i++)
+        {
+            int shopLineupId = currentShopLineupId++;
+            string name = $"[Bernie Bingo - {shopItems[i].Type}] {shopItems[i].Name}";
+            int equipID = shopItems[i].ID;
+            byte equipType = shopItems[i].EquipType;
+            int sellPrice = shopItems[i].Cost;
+            short sellQuantity = shopItems[i].SellQuantity;
+            uint eventFlagForQuantity;
+            if (shopItems[i].EventFlagID == null)
+            {
+                eventFlagForQuantity = currentEventFlagID;
+                currentEventFlagID += eventFlagStepSize;
+            }
+            else
+            {
+                eventFlagForQuantity = (uint)shopItems[i].EventFlagID!;
+            }
+            editor.CreateNewShopLineupRow(shopLineupId, name);
+            editor.SetShopLineupEquipId(shopLineupId, equipID);
+            editor.SetShopLineupEquipType(shopLineupId, equipType);
+            editor.SetShopLineupSellPrice(shopLineupId, sellPrice);
+            editor.SetShopLineupEventFlagForStock(shopLineupId, eventFlagForQuantity);
+            editor.SetShopLineupSellQuantity(shopLineupId, sellQuantity);
+        }
+    }
+
     public void GivePidiaMagicScorpionCharm(ParamsEditor editor)
     {
         // Replace an item in Seluvis's shop with Magic Scorpion Charm
@@ -320,7 +403,7 @@ public class RandomizerServiceBase
         int halberdCategory = editor.GetItemLotMapCategory(treeSentinelItemLotId, 0);
 
         int greatshieldId = editor.GetItemLotMapLotItemId(treeSentinelDuoItemLotId, 0);
-        int greatshieldCategory= editor.GetItemLotMapCategory(treeSentinelDuoItemLotId, 0);
+        int greatshieldCategory = editor.GetItemLotMapCategory(treeSentinelDuoItemLotId, 0);
 
         editor.SetItemLotMapLotItemId(treeSentinelItemLotId, 0, greatshieldId);
         editor.SetItemLotMapCategory(treeSentinelItemLotId, 0, greatshieldCategory);
@@ -337,5 +420,28 @@ public class RandomizerServiceBase
         editor.SetEquipWeaponMaterialSetId(serpentHunterId, 0);
         editor.SetEquipWeaponReinforceTypeId(serpentHunterId, 3000);
         editor.SetEquipWeaponReinforceShopCategory(serpentHunterId, 0);
+    }
+
+    private void ModeCustomization(BaseMode mode)
+    {
+
+
+        string targetEventPath = Path.Combine(Constants.ModEngineWorkingDirectory, "base", "event");
+        string targetBasePath = Path.Combine(Constants.ModEngineWorkingDirectory, "base");
+
+        string eventDefaultPath = Path.Combine(Constants.ModeFolders, "event_base");
+        string eventBaseplusPath = Path.Combine(Constants.ModeFolders, "full_baseplus");
+
+        modeService.UpdateFolder(
+            targetPath: mode == BaseMode.Baseplus
+                ? targetBasePath
+                : targetEventPath,
+
+            sourcePath: mode switch
+            {
+                BaseMode.Baseplus => eventBaseplusPath,
+                _ => eventDefaultPath
+            }
+        );
     }
 }

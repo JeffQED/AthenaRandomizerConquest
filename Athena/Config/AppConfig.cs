@@ -26,5 +26,7 @@ public class AppConfig
     // Base
     public int? LastUsedSeedBase { get; set; }
     public int? LastRandomizedSeedBase { get; set; }
+
+    public BaseMode? LastRandomizedModeBase { get; set; } // Save the Gamemode chosen
 }
 
